@@ -14,7 +14,7 @@ package com.daineka.home;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Comparator;
 
 public class ArrayList<T extends Comparable<T>> {
     private static final int DEFAULT_CAPACITY = 10;
@@ -100,23 +100,34 @@ public class ArrayList<T extends Comparable<T>> {
     }
 
     public Object get(int index) {
-        isIndexNormal(index);
+        if (!isIndexNormal(index)){
+            throw new IndexOutOfBoundsException();
+        }
         return array[index];
     }
 
-    public void remove(int index) {
-        isIndexNormal(index);
-        fastRemove(index);
+    public boolean remove(int index) {
+        if (isIndexNormal(index)) {
+            remove(array, index);
+            return true;
+        }
+        return false;
     }
 
     public boolean remove(T element) {
-        for (int i = 0; i < size; i++) {
-            if (element.equals(array[i])) {
-                fastRemove(i);
+        for (int i = 0; i < this.size; i++) {
+            if (element.equals(this.array[i])) {
+                remove(this.array, i);
                 return true;
             }
         }
         return false;
+    }
+
+    private void remove(T[] array, int index) {
+        shiftArrayToLeft(index);
+        this.size--;
+        this.array[this.size] = null;
     }
 
     public boolean contains(T element) {
@@ -128,16 +139,11 @@ public class ArrayList<T extends Comparable<T>> {
         return false;
     }
 
-    private void fastRemove(int index) {
-        shiftArrayToLeft(index);
-        this.size--;
-        array[size] = null;
-    }
-
-    public void clear() {
+    public boolean clear() {
         for (int i = 0; i < size; i++) {
             array[i] = null;
         }
+        return true;
     }
 
     private void shiftArrayToLeft(int index) {
@@ -156,10 +162,11 @@ public class ArrayList<T extends Comparable<T>> {
         return this.size >= this.capacity;
     }
 
-    private void isIndexNormal(int index) {
+    private boolean isIndexNormal(int index) {
         if (index >= size || index < 0) {
             throw new IndexOutOfBoundsException();
         }
+        return true;
     }
 
     private void growArray() {
@@ -172,11 +179,12 @@ public class ArrayList<T extends Comparable<T>> {
         if (size == 0) {
             return "";
         }
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < size - 1; i++) {
-            System.out.print("[" + array[i] + "], ");
+            result.append("[").append(array[i]).append("], ");
         }
-        System.out.print("[" + array[size - 1] + "]");
-        return "";
+        result.append("[").append(array[size - 1]).append("]");
+        return String.valueOf(result);
     }
 
     public void bubbleSort() {
@@ -185,9 +193,7 @@ public class ArrayList<T extends Comparable<T>> {
             boolean isSorted = true;
             for (int i = 0; i < lastIndex; i++) {
                 if (array[i].compareTo(array[i + 1]) > 0) {
-                    T temp = array[i];
-                    array[i] = array[i + 1];
-                    array[i + 1] = temp;
+                    swapElements(this, i, i + 1);
                     isSorted = false;
                 }
             }
@@ -202,12 +208,9 @@ public class ArrayList<T extends Comparable<T>> {
         int lastIndex = arrayList.size - 1;
         while (lastIndex > 0) {
             boolean isSorted = true;
-
             for (int i = 0; i < lastIndex; i++) {
                 if (arrayList.array[i].compareTo(arrayList.array[i + 1]) > 0) {
-                    T temp = arrayList.array[i];
-                    arrayList.array[i] = arrayList.array[i + 1];
-                    arrayList.array[i + 1] = temp;
+                    swapElements(arrayList, i, i + 1);
                     isSorted = false;
                 }
             }
@@ -218,15 +221,14 @@ public class ArrayList<T extends Comparable<T>> {
         }
     }
 
-    public static <T extends Comparable<T>> void bubbleSort(List<T> list) {
-        int lastIndex = list.size() - 1;
+
+    public static <T extends Comparable<T>> void bubbleSort(ArrayList<T> arrayList, Comparator<T> comparator) {
+        int lastIndex = arrayList.size - 1;
         while (lastIndex > 0) {
             boolean isSorted = true;
             for (int i = 0; i < lastIndex; i++) {
-                if (list.get(i).compareTo(list.get(i + 1)) > 0) {
-                    T temp = list.get(i);
-                    list.set(i, list.get(i + 1));
-                    list.set(i + 1, temp);
+                if (comparator.compare(arrayList.array[i], arrayList.array[i + 1]) > 0) {
+                    swapElements(arrayList, i, i + 1);
                     isSorted = false;
                 }
             }
@@ -235,6 +237,12 @@ public class ArrayList<T extends Comparable<T>> {
             }
             lastIndex--;
         }
+    }
+
+    private static <T extends Comparable<T>> void swapElements(ArrayList<T> arrayList, int firstIndexElement, int secondIndexElement) {
+        T temp = arrayList.array[firstIndexElement];
+        arrayList.array[firstIndexElement] = arrayList.array[secondIndexElement];
+        arrayList.array[secondIndexElement] = temp;
     }
 
 }
